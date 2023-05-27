@@ -1,9 +1,16 @@
 import { useState } from "react";
 import "./App.css";
 
-function Square(props: { value: string; handleValue: () => void }) {
+function Square(props: {
+  value: string;
+  handleValue: () => void;
+  isWinnerSquare: boolean;
+}) {
   return (
-    <div className="square" onClick={props.handleValue}>
+    <div
+      className={`${props.isWinnerSquare ? "winner-square" : "square"}`}
+      onClick={props.handleValue}
+    >
       {props.value}
     </div>
   );
@@ -16,22 +23,25 @@ function Board(props: {
   onPlay: (newSquares: any) => void;
 }) {
   const handleClick = (i: number) => {
-    const newSquares = [...props.squares];
-
-    if (winner) {
+    if (winner.player) {
       console.log("이미 승리자가 있습니다.");
       return;
     }
 
-    if (newSquares[i]) {
+    if (props.squares[i]) {
       console.log("이미 선택된 칸입니다.");
       return;
     }
 
+    const newSquares = [...props.squares];
+
     newSquares[i] = props.isXNext ? "X" : "O";
     props.onPlay(newSquares);
   };
-  const winner: string | null = calculateWinner(props.squares, props.size);
+  const winner: { player: string | null; line: any[] | null } = calculateWinner(
+    props.squares,
+    props.size
+  );
 
   const renderRow = Array(props.size)
     .fill(null)
@@ -44,6 +54,9 @@ function Board(props: {
               key={i * props.size + j}
               value={props.squares[i * props.size + j]}
               handleValue={() => handleClick(i * props.size + j)}
+              isWinnerSquare={
+                winner.line ? winner.line.includes(i * props.size + j) : false
+              }
             />
           );
         });
@@ -58,8 +71,8 @@ function Board(props: {
   return (
     <>
       <div className="info">
-        {winner
-          ? `Winner is: ${winner}`
+        {winner.player
+          ? `Winner is: ${winner.player}`
           : `Next Player is: ${props.isXNext ? "X" : "O"}`}
       </div>
       {renderRow}
@@ -69,22 +82,43 @@ function Board(props: {
 
 function App() {
   const [boardSize, setBoardSize] = useState(3);
-  const [squares, setSquares] = useState(Array(boardSize * boardSize).fill(""));
   const [isXNext, setIsXNext] = useState(true);
+  const [history, setHistory] = useState([
+    Array(boardSize * boardSize).fill(null),
+  ]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const squares = history[currentStep];
 
   let newSize: number;
 
-  const handleBoarder = () => {
+  const changeBoarderSize = () => {
     setBoardSize(() => {
       return newSize;
     });
-    setSquares(() => Array(newSize * newSize).fill(""));
+    setHistory(() => [Array(newSize * newSize).fill("")]);
   };
 
   const handlePlay = (newSquares: any) => {
-    setSquares(newSquares);
+    const newHistory = [...history.slice(0, currentStep + 1), newSquares];
+    setHistory(newHistory);
+    setCurrentStep(newHistory.length - 1);
     setIsXNext(!isXNext);
+    console.log(newHistory);
   };
+
+  const jumpTo = (index: number) => {
+    setCurrentStep(index);
+    setIsXNext(index % 2 === 0);
+  };
+
+  const historyList = history.map((value, index) => {
+    return (
+      <li key={index}>
+        <button onClick={() => jumpTo(index)}>{index}</button>
+      </li>
+    );
+  });
+
   return (
     <>
       <div className="boarder-size">
@@ -96,7 +130,7 @@ function App() {
         />
         <button
           onClick={() => {
-            handleBoarder();
+            changeBoarderSize();
           }}
         >
           적용
@@ -108,18 +142,26 @@ function App() {
         isXNext={isXNext}
         onPlay={handlePlay}
       />
+      <ol>{historyList}</ol>
     </>
   );
 }
 
-function calculateWinner(squares: string[], size: number): string | null {
+// 승자 계산 함수
+function calculateWinner(
+  squares: string[],
+  size: number
+): { player: string | null; line: any[] | null } {
   const lines = Array(squares.length)
     .fill(null)
     .map((_, i) => {
       return i;
     });
 
-  let winner = null;
+  let winner: { player: string | null; line: any[] | null } = {
+    player: null,
+    line: null,
+  };
 
   const row = Array(size)
     .fill([])
@@ -133,10 +175,11 @@ function calculateWinner(squares: string[], size: number): string | null {
         (value) => !!squares[rowEl[0]] && squares[value] === squares[rowEl[0]]
       )
     ) {
+      winner.line = rowEl;
       if (squares[rowEl[0]] === "X") {
-        winner = "X";
+        winner.player = "X";
       } else {
-        winner = "O";
+        winner.player = "O";
       }
     }
   });
@@ -155,10 +198,11 @@ function calculateWinner(squares: string[], size: number): string | null {
         (value) => !!squares[colEl[0]] && squares[value] === squares[colEl[0]]
       )
     ) {
+      winner.line = colEl;
       if (squares[colEl[0]] === "X") {
-        winner = "X";
+        winner.player = "X";
       } else {
-        winner = "O";
+        winner.player = "O";
       }
     }
   });
@@ -181,14 +225,16 @@ function calculateWinner(squares: string[], size: number): string | null {
         (value) => !!squares[value] && squares[value] === squares[diagonalEl[0]]
       )
     ) {
+      winner.line = diagonalEl;
       if (squares[diagonalEl[0]] === "X") {
-        winner = "X";
+        winner.player = "X";
       } else {
-        winner = "O";
+        winner.player = "O";
       }
     }
   });
-  console.log(winner);
+
+  console.log(winner.line);
 
   return winner;
 }
