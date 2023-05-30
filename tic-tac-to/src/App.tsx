@@ -1,5 +1,5 @@
-import { useState } from "react";
-import "./App.css";
+import { useState } from 'react';
+import './App.css';
 
 function Square(props: {
   value: string;
@@ -8,7 +8,9 @@ function Square(props: {
 }) {
   return (
     <div
-      className={`${props.isWinnerSquare ? "winner-square" : "square"}`}
+      className={`flex items-center justify-center border-[1px] text-base font-bold h-9 mt-[-1px] mr-[-1px] text-center w-9  border-[#999] ${
+        props.isWinnerSquare ? ' bg-red-600' : ''
+      }`}
       onClick={props.handleValue}
     >
       {props.value}
@@ -24,23 +26,23 @@ function Board(props: {
 }) {
   const handleClick = (i: number) => {
     if (winner.player) {
-      console.log("이미 승리자가 있습니다.");
+      console.log('이미 승리자가 있습니다.');
       return;
     }
 
     if (props.squares[i]) {
-      console.log("이미 선택된 칸입니다.");
+      console.log('이미 선택된 칸입니다.');
       return;
     }
 
     const newSquares = [...props.squares];
 
-    newSquares[i] = props.isXNext ? "X" : "O";
+    newSquares[i] = props.isXNext ? 'X' : 'O';
     props.onPlay(newSquares);
   };
   const winner: { player: string | null; line: any[] | null } = calculateWinner(
     props.squares,
-    props.size
+    props.size,
   );
 
   const renderRow = Array(props.size)
@@ -62,7 +64,7 @@ function Board(props: {
         });
 
       return (
-        <div className="board-row" key={i}>
+        <div className="flex items-center justify-center" key={i}>
           {renderCollumn}
         </div>
       );
@@ -70,12 +72,14 @@ function Board(props: {
 
   return (
     <>
-      <div className="info">
-        {winner.player
-          ? `Winner is: ${winner.player}`
-          : `Next Player is: ${props.isXNext ? "X" : "O"}`}
+      <div className="flex flex-col gap-2">
+        <div className="">
+          {winner.player
+            ? `Winner is: ${winner.player}`
+            : `Next Player is: ${props.isXNext ? 'X' : 'O'}`}
+        </div>
+        <div>{renderRow}</div>
       </div>
-      {renderRow}
     </>
   );
 }
@@ -95,7 +99,7 @@ function App() {
     setBoardSize(() => {
       return newSize;
     });
-    setHistory(() => [Array(newSize * newSize).fill("")]);
+    setHistory(() => [Array(newSize * newSize).fill('')]);
   };
 
   const handlePlay = (newSquares: any) => {
@@ -113,36 +117,51 @@ function App() {
 
   const historyList = history.map((value, index) => {
     return (
-      <li key={index}>
-        <button onClick={() => jumpTo(index)}>{index}</button>
+      <li className="flex" key={index}>
+        <button
+          className={`p-2 rounded-md w-full  ${
+            index === 0 ? 'bg-blue-500 text-white' : ' bg-slate-300'
+          }`}
+          onClick={() => jumpTo(index)}
+        >
+          {index === 0 ? 'Go to game start' : `Go to move #${index}`}
+        </button>
       </li>
     );
   });
 
   return (
     <>
-      <div className="boarder-size">
-        <input
-          type="number"
-          onChange={(event) => {
-            newSize = parseInt((event.target as HTMLInputElement).value);
-          }}
-        />
-        <button
-          onClick={() => {
-            changeBoarderSize();
-          }}
-        >
-          적용
-        </button>
+      <div className="flex justify-between">
+        <div className="flex flex-col gap-4 ">
+          <div className="boarder-size">
+            <input
+              className="px-2 py-1 border-2 border-blue-500 rounded-md"
+              type="number"
+              onChange={(event) => {
+                newSize = parseInt((event.target as HTMLInputElement).value);
+              }}
+            />
+            <button
+              className="px-2 py-1 text-white bg-blue-500 rounded-md"
+              onClick={() => {
+                changeBoarderSize();
+              }}
+            >
+              적용
+            </button>
+          </div>
+          <div>
+            <Board
+              squares={squares}
+              size={boardSize}
+              isXNext={isXNext}
+              onPlay={handlePlay}
+            />
+          </div>
+        </div>
+        <ol className="flex flex-col gap-2">{historyList}</ol>
       </div>
-      <Board
-        squares={squares}
-        size={boardSize}
-        isXNext={isXNext}
-        onPlay={handlePlay}
-      />
-      <ol>{historyList}</ol>
     </>
   );
 }
@@ -150,7 +169,7 @@ function App() {
 // 승자 계산 함수
 function calculateWinner(
   squares: string[],
-  size: number
+  size: number,
 ): { player: string | null; line: any[] | null } {
   const lines = Array(squares.length)
     .fill(null)
@@ -172,14 +191,14 @@ function calculateWinner(
   row.forEach((rowEl) => {
     if (
       rowEl.every(
-        (value) => !!squares[rowEl[0]] && squares[value] === squares[rowEl[0]]
+        (value) => !!squares[rowEl[0]] && squares[value] === squares[rowEl[0]],
       )
     ) {
       winner.line = rowEl;
-      if (squares[rowEl[0]] === "X") {
-        winner.player = "X";
+      if (squares[rowEl[0]] === 'X') {
+        winner.player = 'X';
       } else {
-        winner.player = "O";
+        winner.player = 'O';
       }
     }
   });
@@ -195,14 +214,14 @@ function calculateWinner(
   col.forEach((colEl) => {
     if (
       colEl.every(
-        (value) => !!squares[colEl[0]] && squares[value] === squares[colEl[0]]
+        (value) => !!squares[colEl[0]] && squares[value] === squares[colEl[0]],
       )
     ) {
       winner.line = colEl;
-      if (squares[colEl[0]] === "X") {
-        winner.player = "X";
+      if (squares[colEl[0]] === 'X') {
+        winner.player = 'X';
       } else {
-        winner.player = "O";
+        winner.player = 'O';
       }
     }
   });
@@ -222,14 +241,15 @@ function calculateWinner(
   diagonal.forEach((diagonalEl) => {
     if (
       diagonalEl.every(
-        (value) => !!squares[value] && squares[value] === squares[diagonalEl[0]]
+        (value) =>
+          !!squares[value] && squares[value] === squares[diagonalEl[0]],
       )
     ) {
       winner.line = diagonalEl;
-      if (squares[diagonalEl[0]] === "X") {
-        winner.player = "X";
+      if (squares[diagonalEl[0]] === 'X') {
+        winner.player = 'X';
       } else {
-        winner.player = "O";
+        winner.player = 'O';
       }
     }
   });
