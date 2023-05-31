@@ -25,6 +25,11 @@ function Board(props: {
   onPlay: (newSquares: any) => void;
 }) {
   const handleClick = (i: number) => {
+    if (winner.player === 'Draw') {
+      console.log('무승부입니다.');
+      return;
+    }
+
     if (winner.player) {
       console.log('이미 승리자가 있습니다.');
       return;
@@ -75,7 +80,9 @@ function Board(props: {
       <div className="flex flex-col gap-2">
         <div className="">
           {winner.player
-            ? `Winner is: ${winner.player}`
+            ? winner.player !== 'Draw'
+              ? `Winner is: ${winner.player}`
+              : 'Draw'
             : `Next Player is: ${props.isXNext ? 'X' : 'O'}`}
         </div>
         <div>{renderRow}</div>
@@ -96,10 +103,16 @@ function App() {
   let newSize: number;
 
   const changeBoarderSize = () => {
+    if (!newSize || newSize === boardSize) {
+      return;
+    }
+
     setBoardSize(() => {
       return newSize;
     });
     setHistory(() => [Array(newSize * newSize).fill('')]);
+    setCurrentStep(0);
+    setIsXNext(true);
   };
 
   const handlePlay = (newSquares: any) => {
@@ -107,7 +120,6 @@ function App() {
     setHistory(newHistory);
     setCurrentStep(newHistory.length - 1);
     setIsXNext(!isXNext);
-    console.log(newHistory);
   };
 
   const jumpTo = (index: number) => {
@@ -115,16 +127,30 @@ function App() {
     setIsXNext(index % 2 === 0);
   };
 
+  const buttonText = (index: number): string => {
+    if (index === 0) {
+      return 'Go to game start';
+    } else if (index === history.length - 1) {
+      return `Current playing is #${index}`;
+    } else {
+      return `Go to move #${index}`;
+    }
+  };
+
   const historyList = history.map((value, index) => {
     return (
       <li className="flex" key={index}>
         <button
-          className={`p-2 rounded-md w-full  ${
-            index === 0 ? 'bg-blue-500 text-white' : ' bg-slate-300'
-          }`}
+          className={
+            `p-2 rounded-md w-full` +
+            (index === currentStep && index !== 0
+              ? ' text-white font-bold bg-blue-950'
+              : '') +
+            (index === 0 ? ' bg-blue-500 text-white' : ' bg-slate-300')
+          }
           onClick={() => jumpTo(index)}
         >
-          {index === 0 ? 'Go to game start' : `Go to move #${index}`}
+          {buttonText(index)}
         </button>
       </li>
     );
@@ -134,7 +160,7 @@ function App() {
     <>
       <div className="flex justify-between">
         <div className="flex flex-col gap-4 ">
-          <div className="boarder-size">
+          <div className="flex items-center justify-center gap-4">
             <input
               className="px-2 py-1 border-2 border-blue-500 rounded-md"
               type="number"
@@ -171,6 +197,13 @@ function calculateWinner(
   squares: string[],
   size: number,
 ): { player: string | null; line: any[] | null } {
+  if (squares.every((value) => !!value)) {
+    return {
+      player: 'Draw',
+      line: null,
+    };
+  }
+
   const lines = Array(squares.length)
     .fill(null)
     .map((_, i) => {
@@ -182,6 +215,7 @@ function calculateWinner(
     line: null,
   };
 
+  // 행 검사
   const row = Array(size)
     .fill([])
     .map((_, i) => {
@@ -203,6 +237,7 @@ function calculateWinner(
     }
   });
 
+  // 열 검사
   const col = Array(size)
     .fill([])
     .map((_, i) => {
@@ -226,6 +261,7 @@ function calculateWinner(
     }
   });
 
+  // 대각선 검사
   const diagonal = Array(2)
     .fill([])
     .map((_, i) => {
@@ -253,8 +289,6 @@ function calculateWinner(
       }
     }
   });
-
-  console.log(winner.line);
 
   return winner;
 }

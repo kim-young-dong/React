@@ -4,18 +4,3 @@
   padding: 2rem;
   text-align: center;
 }
-
-.info {
-  margin-bottom: 10px;
-}
-
-.boarder-size {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  align-items: center;
-}
-.game {
-  display: flex;
-  flex-direction: row;
-}
