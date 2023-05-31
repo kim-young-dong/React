@@ -128,12 +128,18 @@ function App() {
   };
 
   const buttonText = (index: number): string => {
+    const currentElIndex = history[index].findIndex((value, idx) => {
+      return value !== history[index - 1]?.[idx];
+    });
+
+    const row = Math.ceil((currentElIndex + 1) / boardSize);
+    const col = (currentElIndex % boardSize) + 1;
     if (index === 0) {
       return 'Go to game start';
     } else if (index === history.length - 1) {
-      return `Current playing is #${index}`;
+      return `Current playing is #${index} (${row}행, ${col}열)`;
     } else {
-      return `Go to move #${index}`;
+      return `Go to move #${index} (${row}행, ${col}열)`;
     }
   };
 
