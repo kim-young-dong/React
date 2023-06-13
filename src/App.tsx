@@ -26,17 +26,17 @@ function Board(props: {
 }) {
   const handleClick = (i: number) => {
     if (winner.player === 'Draw') {
-      console.log('무승부입니다.');
+      alert('무승부입니다.');
       return;
     }
 
     if (winner.player) {
-      console.log('이미 승리자가 있습니다.');
+      alert('이미 승리자가 있습니다.');
       return;
     }
 
     if (props.squares[i]) {
-      console.log('이미 선택된 칸입니다.');
+      alert('이미 선택된 칸입니다.');
       return;
     }
 
@@ -45,6 +45,7 @@ function Board(props: {
     newSquares[i] = props.isXNext ? 'X' : 'O';
     props.onPlay(newSquares);
   };
+
   const winner: { player: string | null; line: any[] | null } = calculateWinner(
     props.squares,
     props.size,
@@ -145,7 +146,7 @@ function App() {
 
   const historyList = history.map((value, index) => {
     return (
-      <li className="flex" key={index}>
+      <li className="flex w-full" key={index}>
         <button
           className={
             `p-2 rounded-md w-full` +
@@ -164,7 +165,7 @@ function App() {
 
   return (
     <>
-      <div className="flex justify-between">
+      <div className="flex justify-center gap-8">
         <div className="flex flex-col gap-4 ">
           <div className="flex items-center justify-center gap-4">
             <input
@@ -192,7 +193,9 @@ function App() {
             />
           </div>
         </div>
-        <ol className="flex flex-col gap-2">{historyList}</ol>
+        <ol className="flex flex-col gap-2 items-center w-[280px]">
+          {historyList}
+        </ol>
       </div>
     </>
   );
