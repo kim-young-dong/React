@@ -107,6 +107,10 @@ function App() {
     if (!newSize || newSize === boardSize) {
       return;
     }
+    if (newSize < 3 || newSize > 30) {
+      alert('3이상 30이하의 숫자를 입력해주세요');
+      return;
+    }
 
     setBoardSize(() => {
       return newSize;
